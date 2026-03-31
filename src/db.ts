@@ -16,15 +16,46 @@ export interface Movimiento {
   fecha: Date
 }
 
+export interface Producto {
+  id: string
+  nombre: string
+  precio: number
+  creadoEn: Date
+}
+
+export interface VentaItem {
+  productoId: string | null
+  descripcion: string
+  cantidad: number
+  precioUnitario: number
+}
+
+export interface Venta {
+  id: string
+  items: VentaItem[]
+  clienteId: string | null
+  metodoPago: 'efectivo' | 'transferencia' | 'fiado'
+  total: number
+  fecha: Date
+}
+
 class FiadosDB extends Dexie {
   clientes!: Table<Cliente>
   movimientos!: Table<Movimiento>
+  productos!: Table<Producto>
+  ventas!: Table<Venta>
 
   constructor() {
     super('FiadosDB')
     this.version(1).stores({
       clientes: 'id, nombre',
       movimientos: 'id, clienteId, fecha',
+    })
+    this.version(2).stores({
+      clientes: 'id, nombre',
+      movimientos: 'id, clienteId, fecha',
+      productos: 'id, nombre',
+      ventas: 'id, clienteId, metodoPago, fecha',
     })
   }
 }
@@ -56,5 +87,16 @@ export async function seedDatos() {
     { id: crypto.randomUUID(), clienteId: carlos, tipo: 'fiado', descripcion: '5 kg pan, 2 gaseosas, 1 fiambre', monto: 12000, fecha: new Date('2026-03-21') },
     { id: crypto.randomUUID(), clienteId: carlos, tipo: 'fiado', descripcion: '1 aceite, 2 fideos, 1 salsa', monto: 5800, fecha: new Date('2026-03-26') },
     { id: crypto.randomUUID(), clienteId: carlos, tipo: 'pago', descripcion: 'Pago parcial', monto: 3000, fecha: new Date('2026-03-27') },
+  ])
+
+  // Productos de ejemplo
+  await db.productos.bulkAdd([
+    { id: crypto.randomUUID(), nombre: 'Pan (kg)', precio: 1500, creadoEn: new Date('2026-03-01') },
+    { id: crypto.randomUUID(), nombre: 'Leche 1L', precio: 1200, creadoEn: new Date('2026-03-01') },
+    { id: crypto.randomUUID(), nombre: 'Coca Cola 1.5L', precio: 2500, creadoEn: new Date('2026-03-01') },
+    { id: crypto.randomUUID(), nombre: 'Queso cremoso (kg)', precio: 8500, creadoEn: new Date('2026-03-01') },
+    { id: crypto.randomUUID(), nombre: 'Aceite girasol 1.5L', precio: 3200, creadoEn: new Date('2026-03-01') },
+    { id: crypto.randomUUID(), nombre: 'Fideos 500g', precio: 1100, creadoEn: new Date('2026-03-01') },
+    { id: crypto.randomUUID(), nombre: 'Huevos (docena)', precio: 4500, creadoEn: new Date('2026-03-01') },
   ])
 }
